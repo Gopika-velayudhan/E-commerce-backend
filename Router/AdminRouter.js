@@ -18,9 +18,9 @@ router
 .get("/allproduct", tryCatchMiddleware(admincontroler.allproducts) )
 .delete("/deleteproducts/:id",tryCatchMiddleware(admincontroler.deleteProduct))
 .get("/productbyid/:id",tryCatchMiddleware(admincontroler.productById))
-.put("/updateproducts/:id",tryCatchMiddleware(admincontroler.updateProduct))
- 
-
+.put("/update/:id",tryCatchMiddleware(admincontroler.updateProduct))
+.get("/orders",tryCatchMiddleware(admincontroler.AdminorderDetails))   
+.get("/status",tryCatchMiddleware(admincontroler.status)) 
 
 
 

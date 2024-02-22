@@ -7,11 +7,15 @@ const Product = require("../Model/ProductSchema")
 const jwt = require("jsonwebtoken")
 
 const bcrypt = require("bcrypt")
+ const order = require("../Model/OrderSchema")
 
+ const {default:Stripe} = require('stripe')
+
+ const stripe = require("stripe")(process.env.stripe_key)
 
 const {joiUserSchema} = require("../Model/ValidateSchema")
 
-
+let sValue = {}
 
 module.exports = {
     //user registation(Post)
@@ -153,25 +157,29 @@ module.exports = {
     addtocart:async(req,res)=>{
         const userid = req.params.id;
         const user = await User.findById(userid)
+        console.log(userid);
         if(!user){
-            res.status(404).json({
+           return res.status(404).json({
                 status:"failed",
                 message:"user not found"
             });
         }
         const {productid} = req.body;
+        console.log(req.body);
         if(!productid){
-            res.status(404).json({
+            return res.status(404).json({
                 status:"error",
                 message:"product not found"
                 
             });
         }
-        await User.updateOne({id:userid},{$addToSet:{cart:productid}});
+        await User.updateOne({_id:userid},{$addToSet:{cart:productid}},{new:true});
         res.status(200).send({
             status:"success",
             message:"successfully product was added to cart",
+            
         });
+    
 
 
 
@@ -186,7 +194,7 @@ module.exports = {
                 message:"user not found"
             });
         }
-        const cartProductid = User.cart;
+        const cartProductid = user.cart;
         if(cartProductid.length===0){
             res.status(200).json({
                 status:"success",
@@ -195,7 +203,7 @@ module.exports = {
             
             });
         }
-        const cartproduct = await Product.find({id:{$in:{cartProductid}}})
+        const cartproduct = await Product.find({ _id: { $in: cartProductid } })
 
         res.status(200).json({
             status:"success",
@@ -258,7 +266,7 @@ module.exports = {
                 message:"user not found"
             });
         }
-        const wishProdid = req.params.id;
+        const wishProdid = user.wishlist;
         
         if(wishProdid.length===0){
             return res.status(200).json({
@@ -268,7 +276,7 @@ module.exports = {
             });
         }
 
-        const wishprods = await Product.find({_id:{$in:{wishProdid}}})
+        const wishprods = await Product.find({ _id: { $in: wishProdid } })
         res.status(200).json({
             status:"success",
             message:"wishlist product is fetched successfully",
@@ -278,9 +286,17 @@ module.exports = {
     //delete wishlist
 
     delete:async(req,res)=>{
+
         const userid = req.params.id;
-        const {productid} = req.body;
+        
+        console.log(userid,"ffffff");
+
+        const { productid } = req.body;
+
+        console.log(productid,"dddddd");
+
         if(!productid){
+
             return res.status(400).json({
                 message:"product not found"
             });
@@ -292,101 +308,104 @@ module.exports = {
             })
         }
         await User.updateOne({_id:userid},{$pull:{wishlist:productid}});
+
         res.status(200).json({message:"successfully removed from wishlist"})
-    }
+    },
 
-    //payment
-    // payment:async(res,req)=>{
-    //     const userid = req.params.id;
-    //     const user= await User.findOne({_id:userid}).populate("cart");
-    //     if(!user){
-    //         return res.status(404).json({
-    //             message:"User not found"
-    //         });
-    //     }
-    //     const cartProducts = user.cart
-    //     if(cartProducts.length===0){
-    //         return res.status(200).json({
-    //             status:"success",
-    //             message:"cart is empty",
-    //             data:[]
-    //         })
-    //     }
-    //     const lineitems = cartProducts.map((item)=>{
-    //         return{
-    //             price_data:{
-    //                 currency:"inr",
-    //                 product_data:{
-    //                     name:item.title,
-    //                     description:item.description
+    // payment
+    payment:async(req,res)=>{
+        const userid = req.params.id
+        
+        const user= await User.findOne({_id:userid}).populate("cart");
+        
+        if(!user){
+            return res.status(404).json({
+                message:"User not found"
+            });
+        }
+        const cartProducts = user.cart
+        if(cartProducts.length===0){
+            return res.status(200).json({
+                status:"success",
+                message:"cart is empty",
+                data:[]
+            })
+        }
+        const lineitems = cartProducts.map((item)=>{
+            return{
+                price_data:{
+                    currency:"inr",
+                    product_data:{
+                        name:item.title,
+                        description:item.description
 
-    //                 },
-    //                 unit_amount:Math.round(item.price*100),
-    //             },
-    //             quantity:1,
-    //         };
-    //     });
-    //     session = await stripe.checkout.sessions.create({
-    //         payment_method_types:["card"],
-    //         line_items:lineitems,
-    //         mode:"payment",
-    //         session_url:"",
+                    },
+                    unit_amount:Math.round(item.price*100),
+                },
+                quantity:1,
+            };
+        });
+        session = await stripe.checkout.sessions.create({
+            payment_method_types:["card"],
+            line_items:lineitems,
+            mode:"payment",
+            success_url:"http://localhost:4008/api/users/payment/success",
 
-    //     });
-    //     if(!session){
-    //         return res.json({
-    //             status:"failure",
-    //             message:"error occured on session side"
-    //         });
-    //     }
-    //     svalue={
-    //         userid,
-    //         user,
-    //         session,
-    //     };
-    //     res.status(200).json({
-    //         status:"success",
-    //         message:"strip paymeny session is created",
-    //         url:session.url,
+        });
+        if(!session){
+            return res.json({
+                status:"failure",
+                message:"error occured on session side"
+            });
+        }
+        sValue={
+            userid,
+            user,
+            session,
+        };
+        res.status(200).json({
+            status:"success",
+            message:"strip paymeny session is created",
+            url:session.url,
 
-    //     });
-    // },
-    // success:async(res,req)=>{
-    //     const{id,user,session} = svalue;
+        });
+    },
+    success:async(req,res)=>{
+        const{id,user,session} = sValue;
 
-    //     const userid = user._id;
-    //     const cartItem = user.cart;
-    //     const orders = await order.create({
-    //         userid:id,
-    //         product:cartItem.map(
-    //             (value)=>new mongoose.Types.ObjectId(value._id)
-    //         ),
-    //         order_id:session.id,
-    //         payment_id:`demo ${Date.now()}`,
-    //         total_amount:session.amount_total/100,
+        const userid = user._id;
+        const cartItem = user.cart;
+        const orders = await order.create({
+            userid:id,
+            product:cartItem.map(
+                (value)=>new mongoose.Types.objectId(value._id)
+            ),
+            order_id:session.id,
+            payment_id:`demo ${Date.now()}`,
+            total_amount:session.amount_total/100,
 
             
 
-    //     });
-    //     if(!orders){
-    //         return res.json({message:"error occured while inputing to orderDb"});
-    //     }
-    //     const userUpdate = await User.upadateOne(
-    //         { _id: userId }, 
-    //         { $push: { orders: orderId } },
-    //         {$set:{cart:[]}},
-    //         {new:true}
-    //     );
-    //     if(userUpdate){
-    //         res.status(200).json({
-    //             status:"success",
-    //             message:"failed to update user data"
-    //         });
-    //     }
+        });
+        if(!orders){
+            return res.json({message:"error occured while inputing to orderDb"});
+        }
+        const userUpdate = await User.upadateOne(
+            { _id: userId }, 
+            { $push: { orders: order_Id } },
+            {$set:{cart:[]}},
+            {new:true}
+        );
+        if(userUpdate){
+            res.status(200).json({
+                status:"success",
+                message:"failed to update user data"
+            });
+        }
     
         
         
-    // }
+    }
 
 
 

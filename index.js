@@ -5,7 +5,7 @@ const bodyParser=require('body-parser')
 const userRouter=require("./Router/UserRouter")
 const adminRouter=require("./Router/AdminRouter")
 const app=express()
-const port =3001
+const port =4008
 
 
 const mongodb="mongodb://127.0.0.1:27017/Backend";
