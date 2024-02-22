@@ -391,7 +391,7 @@ module.exports = {
             return res.json({message:"error occured while inputing to orderDb"});
         }
         const userUpdate = await User.upadateOne(
-            { _id: userId }, 
+            { _id: userid }, 
             { $push: { orders: order_Id } },
             {$set:{cart:[]}},
             {new:true}
