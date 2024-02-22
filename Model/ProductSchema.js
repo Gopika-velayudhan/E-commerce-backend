@@ -1,11 +1,11 @@
 const mongoose = require("mongoose")
 
 const ProductSchema = new mongoose.Schema({
-    id:String,
+    Id:String,
     title:String,
     catagory:String,
     Animal:String,
-    details:String,
+    description:String,
     image:String,
     price:Number
     

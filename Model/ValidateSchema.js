@@ -9,12 +9,13 @@ const joiUserSchema = Joi.object({
 });
 
 const joiproductSchema = Joi.object({
-  id: Joi.string(),
-  title: Joi.string().required(),
-  description: Joi.string(),
-  price: Joi.number().positive(),
-  image: Joi.string(),
+  Id: Joi.string(),
+  title: Joi.string(),
   category: Joi.string(),
+  Animal: Joi.string(),
+  description: Joi.string(),
+  image: Joi.string(),
+  price:Joi.number()
 });
 
 module.exports = { joiUserSchema, joiproductSchema};

@@ -12,7 +12,6 @@ const bcrypt = require("bcrypt")
 const {joiUserSchema} = require("../Model/ValidateSchema")
 
 
-mongoose.connect("mongodb://localhost:27017/Backend")
 
 module.exports = {
     //user registation(Post)
@@ -26,6 +25,14 @@ module.exports = {
             res.status(400).json({
                 status:"error",
                 message:"invalid user,please check data"
+            });
+        }
+        const existingUser = await User.findOne({ name: name });
+
+        if (existingUser) {
+            return res.status(400).json({
+                status: "error",
+                message: "User with this name already exists"
             });
         }
 
@@ -42,6 +49,8 @@ module.exports = {
             message:"user registration successfull"
             
   });
+ 
+  
   
     
     },

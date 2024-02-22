@@ -1,18 +1,45 @@
-require("dotenv").config()
-const express = require("express")
-const adminroute = require("./Router/AdminRouter")
-const userrouter = require("./Router/UserRouter")
+require("dotenv").config();
+const mongoose=require("mongoose");
+const express =require("express")
+const bodyParser=require('body-parser')
+const userRouter=require("./Router/UserRouter")
+const adminRouter=require("./Router/AdminRouter")
+const app=express()
+const port =3001
 
 
-const app = express()
+const mongodb="mongodb://127.0.0.1:27017/Backend";
+    //  useNewUrlParser:true,
+    //  useUnifiedTopolgy:true,
 
-const PORT = 3002;
+    main().catch((err)=>{ 
+        console.log(err);
+    })
+
+
+
+    async function main(){
+        await mongoose.connect(mongodb)
+        console.log("db connected");
+    }
+
+
+
+
+app.use(bodyParser.urlencoded({extended:true}))
+app.use(bodyParser.json())
 
 app.use(express.json())
-app.use("/",userrouter)
-app.listen(PORT,(err)=>{
-    if(err){
-        console.log(`error dected by ${err}`);
-    }
-    console.log(`server running the port ${PORT}`);
+
+app.use("/api/users",userRouter)
+app.use("/api/admin",adminRouter)
+
+
+
+
+
+
+
+app.listen(port,()=>{
+    console.log("server is running on port",port);
 })
