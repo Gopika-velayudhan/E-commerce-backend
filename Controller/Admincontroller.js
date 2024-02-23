@@ -188,43 +188,46 @@ module.exports={
     }
 },
     
-    
     //update product
-
-    updateProduct:async(req,res)=>{
-        const id = req.params.id
-        const {value,error} = joiproductSchema.validate(req.body);
-        console.log(req.body);
-        if(error){
-            return res.status(200).json({
-            
-                message:error.details[0].message
-            })
-        }
-        const{Id,title,category,Animal,description,image,price} = value;
-        const Product = await product.findById(id);
+    updateProduct: async (req, res) => {
         
-        
+      try {
+          const { value, error } = joiproductSchema.validate(req.body);
+      
+  
+          const {Id,title,category,Animal,description,image,price} = value;
+          // console.log(title)
+          if (error) {
+              return res.status(401).json({ status: 'error', message: error.details[0].message });  
+          }
+  
+      
+          const updatedProduct = await product.findByIdAndUpdate(
+              Id,
+              { $set: { title,category,Animal,description,image,price } },
+              { new: true } // This option returns the modified document rather than the original
+          );
+          console.log(updatedProduct)
+  
+          if (updatedProduct) {
+              const updatedProducts = await product.findById(Id); 
+              return res.status(200).json({
+                  status: 'success',
+                  message: 'Successfully updated the product.',
+                  data: updatedProducts,
+              });
+              
+          } else {
+              return res.status(404).json({ status: 'error', message: 'Product not found' });
+          }
+      } catch (error) {
+          console.error('Error updating product:', error);
+          return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+  },
 
-        if(!Product){
-            return res.status(404).json({
-                status:"failure",
-                message:"product not found in databasse"
-
-            })
-        }
-      const newprod= await product.findByIdAndUpdate(id,{Id,title,category,Animal,description,image,price},{new:true}); 
-       
-
-        res.status(200).json({
-            status:"sucess",
-            message:"product updated successfully",
-            data : newprod
-        });
-        
-
-        
-    },
+    // 
+    
     // //order details
     // AdminorderDetails:async(req,res)=>{
     //     const products = await OrderSchema.find()
