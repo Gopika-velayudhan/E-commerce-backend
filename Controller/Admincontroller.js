@@ -205,7 +205,7 @@ module.exports={
           const updatedProduct = await product.findByIdAndUpdate(
               Id,
               { $set: { title,category,Animal,description,image,price } },
-              { new: true } // This option returns the modified document rather than the original
+              { new: true } 
           );
           console.log(updatedProduct)
   
@@ -231,6 +231,7 @@ module.exports={
     // //order details
     // AdminorderDetails:async(req,res)=>{
     //     const products = await OrderSchema.find()
+        
     //     if(products.length===0){
     //         return res.status(404).json({
     //             status:"error",
@@ -245,7 +246,7 @@ module.exports={
     //         order_Data:products
     //     })
     // },
-    // //total revenue genarated
+    //total revenue genarated
 
     // status:async(req,res)=>{
     //     const totalRevenue = await OrderSchema.aggregate([

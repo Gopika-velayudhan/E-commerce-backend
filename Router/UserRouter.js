@@ -18,6 +18,6 @@ router
 .delete("/deletewishlist/:id",trycatchmiddleware(userControler.delete))
 .post("/:id/payment",trycatchmiddleware(userControler.payment))
 .get("/payment/success",trycatchmiddleware(userControler.success))
-.post("/payment/cancel",trycatchmiddleware(userControler.cancel))
-.get("/:id/orders",trycatchmiddleware(userControler.orderdetails))
+// .post("/payment/cancel",trycatchmiddleware(use))
+// .get("/:id/orders",trycatchmiddleware(userControler.orderdetails))
 module.exports=router

@@ -20,7 +20,7 @@ router
 .get("/productbyid/:id",tryCatchMiddleware(admincontroler.productById))
 .put("/update/:id",tryCatchMiddleware(admincontroler.updateProduct))
 .get("/orders",tryCatchMiddleware(admincontroler.AdminorderDetails))   
-.get("/status",tryCatchMiddleware(admincontroler.status)) 
+// .get("/status",tryCatchMiddleware(admincontroler.status)) 
 
 
 

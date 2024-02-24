@@ -317,6 +317,7 @@ module.exports = {
         const userid = req.params.id
         
         const user= await User.findOne({_id:userid}).populate("cart");
+        console.log(user,"hhhhhhh");
         
         if(!user){
             return res.status(404).json({
@@ -336,8 +337,11 @@ module.exports = {
                 price_data:{
                     currency:"inr",
                     product_data:{
+                       
                         name:item.title,
-                        description:item.description
+                        description:item.description,
+                        
+                        
 
                     },
                     unit_amount:Math.round(item.price*100),
@@ -353,7 +357,7 @@ module.exports = {
 
         });
         if(!session){
-            return res.json({
+        return res.json({
                 status:"failure",
                 message:"error occured on session side"
             });
@@ -370,44 +374,43 @@ module.exports = {
 
         });
     },
-    success:async(req,res)=>{
-        const{id,user,session} = sValue;
-
-        const userid = user._id;
-        const cartItem = user.cart;
-        const orders = await order.create({
-            userid:id,
-            product:cartItem.map(
-                (value)=>new mongoose.Types.objectId(value._id)
-            ),
-            order_id:session.id,
-            payment_id:`demo ${Date.now()}`,
-            total_amount:session.amount_total/100,
-
-            
-
-        });
-        if(!orders){
-            return res.json({message:"error occured while inputing to orderDb"});
-        }
-        const userUpdate = await User.upadateOne(
-            { _id: userid }, 
-            { $push: { orders: order_Id } },
-            {$set:{cart:[]}},
-            {new:true}
-        );
-        if(userUpdate){
-            res.status(200).json({
-                status:"success",
-                message:"failed to update user data"
-            });
-        }
     
-        
-        
-    }
-
-
+   
+//     success: async (req, res) => {
+//         const { _id, user, session } = sValue;
+    
+//         const userId = user._id;
+//         const cartItems = user.cart;
+    
+//         const orders = await order.create({
+//           userId: _id,
+//           products: cartItems.map(
+//             (value) => new mongoose.Types.objectId(value._id)
+//           ),
+//           order_id: session.id,
+//           payment_id:` demo ${Date.now()}`,
+//           total_amount: session.amount_total / 100,
+//         });
+//         console.log("orderr", orders);
+    
+//         if (!orders) {
+//           return res.json({ message: "error occured while inputing to orderDB" });
+//         }
+    
+//         const userUpdate = await User.updateOne(
+//           { _id: userId },
+//           { $push: { orders: order_id }, $set: { cart: [] } },
+//           { new: true }
+//         );
+    
+//         if (userUpdate) {
+//           res.status(200).json({
+//             status: "success",
+//             message: "failed to update user data",
+//         });
+//     }
+// },
+    
 
 }
 
