@@ -5,11 +5,10 @@ const joiUserSchema = Joi.object({
   email: Joi.string().email(),
   phonenumber: Joi.number().min(10),
   userName: Joi.string().alphanum().min(3).max(20),
-  password: Joi.string().required(),
+  password: Joi.string()
 });
 
 const joiproductSchema = Joi.object({
-   Id: Joi.string(),
   title: Joi.string(),
   category: Joi.string(),
   Animal: Joi.string(),

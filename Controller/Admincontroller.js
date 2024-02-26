@@ -91,14 +91,14 @@ module.exports={
     createProduct:async(req,res)=>{
         const {value,error} = joiproductSchema.validate(req.body);
 
-        const {Id,title,category,Animal,description,image,price} = value;
+        const {title,category,Animal,description,image,price} = value;
 
         if(error){
-            return res.status(400).json({error:error.details[0].message});
+            return res.status(400).json({error:error.message});
 
         }else{
             await product.create({
-                Id,
+            
                 title,
                 category,
                 Animal,
@@ -198,7 +198,7 @@ module.exports={
           const {Id,title,category,Animal,description,image,price} = value;
           // console.log(title)
           if (error) {
-              return res.status(401).json({ status: 'error', message: error.details[0].message });  
+              return res.status(401).json({ status: 'error', message: error.message });  
           }
   
       

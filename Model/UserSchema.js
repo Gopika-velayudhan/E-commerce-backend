@@ -7,7 +7,8 @@ const userSchema = new mongoose.Schema({
     userName:String,
     password:String,
     cart:[{type:mongoose.Schema.ObjectId,ref:"Product"}],
-    wishlist:[{type:mongoose.Schema.ObjectId,ref:"Product"}]
+    wishlist:[{type:mongoose.Schema.ObjectId,ref:"Product"}],
+    orders:[{type:mongoose.Schema.ObjectId,ref:"Order"}]
 
 })
 
