@@ -7,7 +7,7 @@ const verifyTocken = require("../Middlewares/userauth")
 router
 
 .post("/register",trycatchmiddleware(userControler.userRegister))
-.post("/userlogin",trycatchmiddleware(userControler.userlogin))
+.post("/userlogin",trycatchmiddleware(userControler.userLogin))
 .use(verifyTocken)
 .get("/viewProduct",trycatchmiddleware(userControler.viewallproduct))
 .get("/products/:id",trycatchmiddleware(userControler.viewgetbyid))
@@ -19,6 +19,6 @@ router
 .get("/showwishlist/:id",trycatchmiddleware(userControler.showwishlist))
 .delete("/deletewishlist/:id",trycatchmiddleware(userControler.delete))
 .post("/:id/payment",trycatchmiddleware(userControler.payment))
-// .get("/payment/success",trycatchmiddleware(userControler.success))
+ .post("/paymentsuccess",trycatchmiddleware(userControler.success))
 
 module.exports=router

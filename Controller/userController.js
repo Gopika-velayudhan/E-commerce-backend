@@ -7,12 +7,15 @@ const Product = require("../Model/ProductSchema")
 const jwt = require("jsonwebtoken")
 
 const bcrypt = require("bcrypt")
- const order = require("../Model/OrderSchema")
- const Order = require("../Model/OrderSchema")
+
+const order = require("../Model/OrderSchema")
+
+const Order = require("../Model/OrderSchema")
 
  const {default:Stripe} = require('stripe')
 
  const stripe = require("stripe")(process.env.stripe_key)
+
  const products = require("../Model/ProductSchema")
 
 const {joiUserSchema} = require("../Model/ValidateSchema")
@@ -63,63 +66,43 @@ module.exports = {
 
     //user login (Post)
 
-    userlogin:async(req,res)=>{
-        // console.log(res.body);
-        const  { value, error } = joiUserSchema.validate(req.body)
-    if(error){
-        res.json(error.message);
-    }
-
-    const {email,password} = value;
-    console.log(userName,password);
-
-    // console.log(userName,password);
-    const user = await User.findOne({
-        email:email,
-    });
-    console.log(user)
-    const id = user._id
-    const userName = user.userName
-   
+  
+  
+    userLogin: async (req, res) => {
+        const { value, error } = joiUserSchema.validate(req.body);
     
-
-    if(!user){
-         res.status(404).json({
-            status:"error",
-            message:"user not found"
-        });
-    }
-
-    if(!password || !user.password){
-        return res.status(404).json({
-            status:"error",message:"invalid input"
-        });
-    }
-
-
-    const passwordMatch = await bcrypt.compare(password,user.password);
-    if(!passwordMatch){
-        return res.status(401).json({
-            error:"error",
-            message:"incorrect password"
-        });
-    }
-
-
-    const token = jwt.sign(
-        {email:user.email},
-        process.env.USER_ACCESS_TOKEN_SECRT,
-        {
-            expiresIn:86400,
+        if (error) {
+          res.json(error.message);
         }
-    );
-
-    res.status(200).json({
-        status:"success",
-        message:"Login successful",
-        Token:{token,user}
-    })
-},
+    
+        const { userName, password } = value;
+        const user = await User.findOne({ userName: userName });
+        if (!user) {
+          return res
+            .status(404)
+            .json({ status: "error", message: "user not found" });
+        }
+        if (!password || !user.password) {
+          return res
+            .status(400)
+            .json({ status: "error", message: "Invalid input" });
+        }
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+          return res
+            .status(401)
+            .json({ error: "error", message: "incorrect password" });
+        }
+    
+        const token = jwt.sign(
+          { userName: user.userName },
+          process.env.USER_ACCESS_TOKEN_SECRT,
+          { expiresIn: 43200 }
+        );
+        res
+          .status(200)
+          .json({ status: "success", message: "Login Sucessfully", Token:token});
+    },
     //view all product(get)
 
     viewallproduct:async(req,res)=>{
@@ -410,6 +393,7 @@ module.exports = {
                 data:[]
             })
         }
+        
         const lineitems = cartProducts.map((item)=>{
             return{
                 price_data:{
@@ -418,6 +402,7 @@ module.exports = {
                        
                         name:item.title,
                         description:item.description,
+                        
                         
                         
 
@@ -431,7 +416,7 @@ module.exports = {
             payment_method_types:["card"],
             line_items:lineitems,
             mode:"payment",
-            success_url:`http://https://www.youtube.com/watch?v=1r-F3FIONl8&t=267s`,
+            success_url:`http://localhost:4008//paymentsuccess`,
 
         });
         if(!session){
@@ -440,11 +425,12 @@ module.exports = {
                 message:"error occured on session side"
             });
         }
-        sValue={
+       sValue={
             userid,
             user,
             session,
         };
+        console.log(sValue,"cvgbhj");
         res.status(200).json({
             status:"success",
             message:"strip paymeny session is created",
@@ -454,9 +440,95 @@ module.exports = {
 
 
     },
+    success: async (req, res) => {
+        try {
+            // Retrieve relevant information from the request parameters or body
+            const sessionID = req.query.session_id; // Assuming you receive the session ID as a query parameter
+    
+            // Verify the payment status using the session ID
+            const session = await stripe.checkout.sessions.retrieve(sessionID);
+    
+            // Check if payment was successful
+            if (session.payment_status === 'paid') {
+                // Process successful payment
+                // Update database, create order, update user's cart, etc.
+    
+                res.status(200).json({
+                    status: "success",
+                    message: "Payment successful. Thank you for your purchase!",
+                });
+            } else {
+                // Payment failed or not yet completed
+                res.status(400).json({
+                    status: "failure",
+                    message: "Payment not successful. Please try again.",
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                status: "error",
+                message: "An error occurred while processing the payment.",
+                error: error.message,
+            });
+        }
+    },
 
-    Success : async(req,res)=>{
+    // Success : async(req,res)=>{
+    //     try{
+    //         const{id,user,session} = sValue
+    //         console.log(sValue,"sdfghgssdfsdf");
+            
+    //         const userid = user._id;
+    //         const cartItems = user.cart;
+    //         const productid = cartItems.map((item)=>item.productid)
 
-    }
+    //         const orders = await Order.create({
+    //             userid:id,
+    //             products:productid,
+    //             order_id:session._id,
+    //             payment_id:`demo ${Date.now()}`,
+    //             total_amount:session.amount_total/100,
+
+
+    //         });
+    //         if(!orders){
+    //             return res.json({
+    //                 status:"failure",
+    //                 message:"error occured while inputig order db"
+    //             })
+    //         }
+    //         const orderid = orders._id;
+    //         const userUpdate = await User.updateOne(
+    //             {_id:userid},
+    //             {
+    //                 $push:{orders:orderid},
+    //                 $set:{cart:[]},
+    //             },
+    //             {new:true}
+    //         );
+    //         if(userUpdate.nModified===1){
+    //             res.status(200).json({
+    //                 status:"success",
+    //                 message:"payment successfull"
+    //             })
+    //         }else{
+    //             res.status(500).json({
+    //                 status:"Error",
+    //                 message:"failed to update user dat"
+    //             });
+    //         }
+    //     }catch(error){
+    //         console.error(error);
+    //         res.status(500).json({
+    //             status:"error",
+    //             message:"an error occurd",
+    //             error_message:error.message
+
+    //         });
+
+    //     }
+
+    // }
     
 }

@@ -11,7 +11,7 @@ module.exports = function verifyToken(req, res, next) {
         if (err) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-        req.username = decoded.username;
+        req.userName = decoded.userName;
         next();
     });
 };
