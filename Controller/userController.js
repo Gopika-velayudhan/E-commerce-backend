@@ -440,95 +440,64 @@ module.exports = {
 
 
     },
-    success: async (req, res) => {
-        try {
-            // Retrieve relevant information from the request parameters or body
-            const sessionID = req.query.session_id; // Assuming you receive the session ID as a query parameter
+   
     
-            // Verify the payment status using the session ID
-            const session = await stripe.checkout.sessions.retrieve(sessionID);
-    
-            // Check if payment was successful
-            if (session.payment_status === 'paid') {
-                // Process successful payment
-                // Update database, create order, update user's cart, etc.
-    
+
+    Success : async(req,res)=>{
+        try{
+            const{id,user,session} = sValue
+            console.log(sValue,"sdfghgssdfsdf");
+            
+            const userid = user._id;
+            const cartItems = user.cart;
+            const productid = cartItems.map((item)=>item.productid)
+
+            const orders = await Order.create({
+                userid:id,
+                products:productid,
+                order_id:session._id,
+                payment_id:`demo ${Date.now()}`,
+                total_amount:session.amount_total/100,
+
+
+            });
+            if(!orders){
+                return res.json({
+                    status:"failure",
+                    message:"error occured while inputig order db"
+                })
+            }
+            const orderid = orders._id;
+            const userUpdate = await User.updateOne(
+                {_id:userid},
+                {
+                    $push:{orders:orderid},
+                    $set:{cart:[]},
+                },
+                {new:true}
+            );
+            if(userUpdate.nModified===1){
                 res.status(200).json({
-                    status: "success",
-                    message: "Payment successful. Thank you for your purchase!",
-                });
-            } else {
-                // Payment failed or not yet completed
-                res.status(400).json({
-                    status: "failure",
-                    message: "Payment not successful. Please try again.",
+                    status:"success",
+                    message:"payment successfull"
+                })
+            }else{
+                res.status(500).json({
+                    status:"Error",
+                    message:"failed to update user dat"
                 });
             }
-        } catch (error) {
+        }catch(error){
             console.error(error);
             res.status(500).json({
-                status: "error",
-                message: "An error occurred while processing the payment.",
-                error: error.message,
+                status:"error",
+                message:"an error occurd",
+                error_message:error.message
+
             });
+
         }
-    },
 
-    // Success : async(req,res)=>{
-    //     try{
-    //         const{id,user,session} = sValue
-    //         console.log(sValue,"sdfghgssdfsdf");
-            
-    //         const userid = user._id;
-    //         const cartItems = user.cart;
-    //         const productid = cartItems.map((item)=>item.productid)
-
-    //         const orders = await Order.create({
-    //             userid:id,
-    //             products:productid,
-    //             order_id:session._id,
-    //             payment_id:`demo ${Date.now()}`,
-    //             total_amount:session.amount_total/100,
-
-
-    //         });
-    //         if(!orders){
-    //             return res.json({
-    //                 status:"failure",
-    //                 message:"error occured while inputig order db"
-    //             })
-    //         }
-    //         const orderid = orders._id;
-    //         const userUpdate = await User.updateOne(
-    //             {_id:userid},
-    //             {
-    //                 $push:{orders:orderid},
-    //                 $set:{cart:[]},
-    //             },
-    //             {new:true}
-    //         );
-    //         if(userUpdate.nModified===1){
-    //             res.status(200).json({
-    //                 status:"success",
-    //                 message:"payment successfull"
-    //             })
-    //         }else{
-    //             res.status(500).json({
-    //                 status:"Error",
-    //                 message:"failed to update user dat"
-    //             });
-    //         }
-    //     }catch(error){
-    //         console.error(error);
-    //         res.status(500).json({
-    //             status:"error",
-    //             message:"an error occurd",
-    //             error_message:error.message
-
-    //         });
-
-    //     }
-
-    // }
+    }
     
 }

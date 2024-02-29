@@ -4,14 +4,14 @@ const multer = require("multer");
 const storage = multer.diskStorage({
   destination: path.join(__dirname, "uploads"),
   filename: (req, file, cb) => {
-    cb(null, Date.now() + file.originalname); 
+    cb(null, Date.now() + file.originalname);
   },
 });
 
 const upload = multer({ storage });
 const cloudinary = require("cloudinary").v2;
 cloudinary.config({
-  cloud_name: process.env.cloud_name ,
+  cloud_name: process.env.cloud_name,
   api_key: process.env.api_key,
   api_secret: process.env.api_secret,
 });
@@ -34,10 +34,11 @@ const imageUpload = (req, res, next) => {
       next();
     } catch (error) {
       console.error("Error uploading file to Cloudinary:", error);
-      return res.status(500).json({ error: "Error uploading file to Cloudinary" });
+      return res
+        .status(500)
+        .json({ error: "Error uploading file to Cloudinary" });
     }
   });
 };
 
 module.exports = imageUpload;
-
