@@ -11,7 +11,7 @@ router
 .use(verifyTocken)
 .get("/viewProduct",trycatchmiddleware(userControler.viewallproduct))
 .get("/products/:id",trycatchmiddleware(userControler.viewgetbyid))
-.post("/addCart/:id",trycatchmiddleware(userControler.addtocart))
+.post("/addCart/:id",trycatchmiddleware(userControler.addToCart))
 .get("/viewCart/:id",trycatchmiddleware(userControler.cartview))
 .put("/:id/cart",trycatchmiddleware(userControler.updatecartitemQuantity))
 .delete("/:id/cart/:itemid",trycatchmiddleware(userControler.removecartProduct))
@@ -20,5 +20,6 @@ router
 .delete("/deletewishlist/:id",trycatchmiddleware(userControler.delete))
 .post("/:id/payment",trycatchmiddleware(userControler.payment))
  .post("/paymentsuccess",trycatchmiddleware(userControler.success))
+ .get("/order/:id",trycatchmiddleware(userControler.orderDetails))
 
 module.exports=router

@@ -216,6 +216,7 @@ module.exports={
                   message: 'Successfully updated the product.',
                   data: updatedProducts,
               });
+
               
           } else {
               return res.status(404).json({ status: 'error', message: 'Product not found' });
@@ -228,25 +229,25 @@ module.exports={
 
     // 
     
-    // //order details
-    // AdminorderDetails:async(req,res)=>{
-    //     const products = await OrderSchema.find()
+    //order details
+    AdminorderDetails:async(req,res)=>{
+        const products = await OrderSchema.find()
         
-    //     if(products.length===0){
-    //         return res.status(404).json({
-    //             status:"error",
-    //             message:"no order details",
+        if(products.length===0){
+            return res.status(404).json({
+                status:"error",
+                message:"no order details",
                 
 
-    //         })
-    //     }
-    //     res.status(200).json({
-    //         status:"success",
-    //         message:"order Details Successfully fetched",
-    //         order_Data:products
-    //     })
-    // },
-    //total revenue genarated
+            })
+        }
+        res.status(200).json({
+            status:"success",
+            message:"order Details Successfully fetched",
+            order_Data:products
+        })
+    },
+   // total revenue genarated
 
     // status:async(req,res)=>{
     //     const totalRevenue = await OrderSchema.aggregate([

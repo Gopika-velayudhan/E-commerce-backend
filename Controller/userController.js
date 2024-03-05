@@ -19,6 +19,7 @@ const Order = require("../Model/OrderSchema")
  const products = require("../Model/ProductSchema")
 
 const {joiUserSchema} = require("../Model/ValidateSchema")
+const { default: mongoose } = require("mongoose")
 
 let sValue = {}
 
@@ -144,47 +145,39 @@ module.exports = {
     },
 
     //add to cart
-    addtocart:async(req,res)=>{
-        const userid = req.params.id;
-        const user = await User.findById(userid)
-        console.log(userid);
+    addToCart:async(req,res) =>{
+        const userid= req.params.id;
+        const user = await User.findById(userid);
+        console.log(user)
+
         if(!user){
-           return res.status(404).json({
+            return res.status(404).send({
                 status:"failed",
-                message:"user not found"
+                message:"user not found",
             });
         }
+
+
         const {productid} = req.body;
         console.log(req.body);
-        if(!productid){
-            return res.status(400).json({
-                status:"error",
-                message:"product id is required in the request body"
-                
-            });
-        }
-
-        const product = await Product.findById(productid)
-        if(!product){
-            return res.status(404).json({
-                status:"failed",
-                message:"product not found"
-            });
-        }
-        const isProductinCart = user.cart.some(item=>item.productid.equals(productid));
-        if(!isProductinCart){
-            return res.status(400).json({
-                status:'failed',
-                message:"this product already in the cart"
-            })
-        }
-        await User.updateOne({_id:userid},{$addToSet:{cart:productid}},{new:true});
-        res.status(200).send({
-            status:"success",
-            message:"successfully product was added to cart",
-            
+        
+    
+    if(!productid){
+        return res.status(404).send({
+            status:"failed",
+            message:"product not found"
         });
+    }
 
+   const newprod= await User.updateOne({_id:userid},{$addToSet:{cart:productid}});
+    res.status(200).send({
+        status:"success",
+        message:"successfully product was added to cart",
+        data:newprod
+
+});
+    
+    
         
     
 
@@ -440,64 +433,91 @@ module.exports = {
 
 
     },
+    //success
+    success:async(req,res)=>{
+        const { userid,user,session} = sValue
+        
+    console.log(sValue,'hiii');
+    console.log(user,"gopi")
+        // const userid =  userId;
+        
+
+        const cartItems = user.cart
+    console.log(cartItems,"fghjk")
+        
+
+         
+      const orders = await Order.create({
+        userId: userid,
+        products:cartItems.map((value)=> new mongoose.Types.ObjectId(value._id),
+        ),
+        order_id: session.id,
+        payment_id: `demo ${Date.now()}`,
+        total_amount: session.amount_total / 100,
+      }); 
+
+      if(!orders){
+        return res.json({ status:"failure",message:"Error occured while inputting to order DB"})
+      }
+
+      const orderId = orders._id; 
+
+      const userUpdate = await User.findOneAndUpdate(
+        { _id: userid },
+        {
+            $push: { orders: orderId },
+            $set: { cart: [] }
+        },
+        { new: true }
+    )
+
+      console.log(userUpdate);
+
+       if(userUpdate){
+         res.status(200).json({
+            status:"success",
+            message:"payment successful"
+        
+         });
+       }else{
+        res.status(500).json({
+            status:"error",
+            message:"Failed to update user data",
+        });
+    }
+
+},
+//orderdetails
+
+orderDetails: async(req,res)=>{
+    const userid = req.params.id;
+
+    const user = await User.findById(userid).populate("orders");
+
+    if(!user){
+        return res.status(404).json({
+            status:"failed",
+            message:"user not found",
+        });
+    }
+    const orderProducts = user.orders;
+
+    if(orderProducts.length===0){
+        return res.status(200).json({
+            message:"you don't have any product orders",
+            data:[],
+        })
+    }
+    const orderWithProducts = await Order.find({_id:{$in:orderProducts}}).populate("Product");
+
+    res.status(200).json({
+        message:"ordered Products Details found",
+        data:orderWithProducts
+  });
+},
+
+
+}
    
     
 
-    Success : async(req,res)=>{
-        try{
-            const{id,user,session} = sValue
-            console.log(sValue,"sdfghgssdfsdf");
-            
-            const userid = user._id;
-            const cartItems = user.cart;
-            const productid = cartItems.map((item)=>item.productid)
-
-            const orders = await Order.create({
-                userid:id,
-                products:productid,
-                order_id:session._id,
-                payment_id:`demo ${Date.now()}`,
-                total_amount:session.amount_total/100,
-
-
-            });
-            if(!orders){
-                return res.json({
-                    status:"failure",
-                    message:"error occured while inputig order db"
-                })
-            }
-            const orderid = orders._id;
-            const userUpdate = await User.updateOne(
-                {_id:userid},
-                {
-                    $push:{orders:orderid},
-                    $set:{cart:[]},
-                },
-                {new:true}
-            );
-            if(userUpdate.nModified===1){
-                res.status(200).json({
-                    status:"success",
-                    message:"payment successfull"
-                })
-            }else{
-                res.status(500).json({
-                    status:"Error",
-                    message:"failed to update user dat"
-                });
-            }
-        }catch(error){
-            console.error(error);
-            res.status(500).json({
-                status:"error",
-                message:"an error occurd",
-                error_message:error.message
-
-            });
-
-        }
-
-    }
-    
-}
