@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken")
 
 const bcrypt = require("bcrypt")
 
-const order = require("../Model/OrderSchema")
+// const order = require("../Model/OrderSchema")
 
 const Order = require("../Model/OrderSchema")
 
@@ -16,9 +16,8 @@ const Order = require("../Model/OrderSchema")
 
  const stripe = require("stripe")(process.env.stripe_key)
 
- const products = require("../Model/ProductSchema")
-
 const {joiUserSchema} = require("../Model/ValidateSchema")
+
 const { default: mongoose } = require("mongoose")
 
 let sValue = {}
@@ -223,6 +222,7 @@ module.exports = {
                 message:"product not found"
             })
         }
+
         const user = await User.findById(userid)
         if(!user){
             res.status(404).json({message:"user not found"})

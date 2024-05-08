@@ -90,7 +90,7 @@ module.exports={
 
     createProduct:async(req,res)=>{
         const {value,error} = joiproductSchema.validate(req.body);
-
+        console.log(req.body);
         const {title,category,Animal,description,image,price} = value;
 
         if(error){
@@ -247,32 +247,32 @@ module.exports={
             order_Data:products
         })
     },
-   // total revenue genarated
+   //total revenue genarated
 
-    // status:async(req,res)=>{
-    //     const totalRevenue = await OrderSchema.aggregate([
-    //         {
-    //             $group:{
-    //                 _id:null,
-    //                 totalProduct:{$sum:{$size:"$products"}},
-    //                 totalRevenue:{$sum:"$total_amount"},
-    //             }
-    //         }
-    //     ])
-    //     if(totalRevenue.length>0){
-    //         res.status(200).json({
-    //             status:"success",
-    //             data:totalRevenue[0]
-    //         })
-    //     }else{
-    //         res.status(200).json({
-    //             status:"success",
-    //             data:{totalProduct:0,
-    //                 totalRevenue:0
-    //             }
-    //         })
-    //     }
-    // }
+    status:async(req,res)=>{
+        const totalRevenue = await OrderSchema.aggregate([
+            {
+                $group:{
+                    _id:null,
+                    totalProduct:{$sum:{$size:"$products"}},
+                    totalRevenue:{$sum:"$total_amount"},
+                }
+            }
+        ])
+        if(totalRevenue.length>0){
+            res.status(200).json({
+                status:"success",
+                data:totalRevenue[0]
+            })
+        }else{
+            res.status(200).json({
+                status:"success",
+                data:{totalProduct:0,
+                    totalRevenue:0
+                }
+            })
+        }
+    }
 
     
 }

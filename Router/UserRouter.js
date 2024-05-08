@@ -12,6 +12,7 @@ router
 .get("/viewProduct",trycatchmiddleware(userControler.viewallproduct))
 .get("/products/:id",trycatchmiddleware(userControler.viewgetbyid))
 .post("/addCart/:id",trycatchmiddleware(userControler.addToCart))
+.put("/removecart/:id",trycatchmiddleware(userControler.removecartProduct))
 .get("/viewCart/:id",trycatchmiddleware(userControler.cartview))
 .put("/:id/cart",trycatchmiddleware(userControler.updatecartitemQuantity))
 .delete("/:id/cart/:itemid",trycatchmiddleware(userControler.removecartProduct))
